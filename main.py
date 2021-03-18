@@ -14,16 +14,19 @@ window.resizable(True, True)
 def convert_to_tkimage():
     global src
     
+    # color img -> gray sclae -> outline
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-    _, binary = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
-
-    img = Image.fromarray(binary)
+    outline = cv2.Canny(gray, 100, 255)
+    # cv2.imshow("canny", outline)
+    
+    img = Image.fromarray(outline)
     imgtk = ImageTk.PhotoImage(image=img)
 
     label.config(image=imgtk)
     label.image = imgtk
 
-src = cv2.imread("lion.jpg")
+
+src = cv2.imread("piano.jpg")
 src = cv2.resize(src, (400, 400))
 
 # transform opencv(BGR) to tkinter(RGB)
@@ -36,7 +39,9 @@ imgtk = ImageTk.PhotoImage(image=img)
 label = Label(window, image=imgtk)
 label.pack(side="left")
 
-button = Button(window, text="이진화 처리", command=convert_to_tkimage)
+
+# GUI
+button = Button(window, text="outline detection", command=convert_to_tkimage)
 button.pack(side="right", expand=True, fill='both')
 
 window.mainloop()
