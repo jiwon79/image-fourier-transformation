@@ -3,13 +3,12 @@ from tkinter import *
 from PIL import Image
 from PIL import ImageTk
 
+############################ tkinter window ############################
 window = Tk()
 window.title("image fourier transformation")
-window.geometry("600x400+100+100")
-window.resizable(True, True)
+window.geometry("1000x400+100+100")
+window.resizable(False, False)
 
-# canvas = Canvas(root, width=400, height=400, bg="black", bd=2)
-# canvas.pack()
 
 def convert_to_tkimage():
     global src
@@ -18,7 +17,7 @@ def convert_to_tkimage():
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     outline = cv2.Canny(gray, 100, 255)
     # cv2.imshow("canny", outline)
-    
+
     img = Image.fromarray(outline)
     imgtk = ImageTk.PhotoImage(image=img)
 
@@ -26,7 +25,8 @@ def convert_to_tkimage():
     label.image = imgtk
 
 
-src = cv2.imread("piano.jpg")
+############################## load img ###############################
+src = cv2.imread("lion.jpg")
 src = cv2.resize(src, (400, 400))
 
 # transform opencv(BGR) to tkinter(RGB)
@@ -36,12 +36,17 @@ img = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
 img = Image.fromarray(img)
 imgtk = ImageTk.PhotoImage(image=img)
 
+
+################################ GUI ###################################
+canvas = Canvas(window, width=400, height=400, bg="black", bd=2)
+canvas.place(x=0, y=0)
+
 label = Label(window, image=imgtk)
-label.pack(side="left")
+label.place(x=400, y=0)
+label.pack
 
-
-# GUI
 button = Button(window, text="outline detection", command=convert_to_tkimage)
-button.pack(side="right", expand=True, fill='both')
+button.place(x=800,y=0, width=200, height=400)
+# button.pack(expand=True, fill='both')
 
 window.mainloop()
