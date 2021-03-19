@@ -1,6 +1,7 @@
 from math import cos, sin, pi
 from tkinter import *
 import time
+
 #from img_to_function import *
 
 def convert(centerx, centery, radius):
@@ -32,10 +33,10 @@ y = lambda t: 100*sin(2*pi*t)+200
 N = 10
 c = complex_fourier_transform(x, y, N)
 
-window = Tk()
-window.title("image fourier transformation")
-window.geometry("600x400+100+100")
-window.resizable(True, True)
+    window = Tk()
+    window.title("image fourier transformation")
+    window.geometry("600x400+100+100")
+    window.resizable(True, True)
 
 canvas = Canvas(window, width=400, height=400, bg="white", bd=2)
 canvas.pack()
