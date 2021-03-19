@@ -2,8 +2,10 @@ import cv2
 from tkinter import *
 from PIL import Image
 from PIL import ImageTk
+from math import cos, sin, pi
 
 from classes import *
+# from fourier_transform import *
 
 ############################ tkinter window ############################
 window = Tk()
@@ -25,6 +27,22 @@ def img_function(t): # 0<= t <= 1
     para = t*len(connectList)-idx
     return segment_function(connectList[idx], connectList[idx+1], para)
 
+def integrate(g):
+    # integrate g(t) from 0 to 1
+    h = 0.0001
+    N = int(1/h)
+    return h*sum(g(h*(i+0.5)) for i in range(N))
+
+
+def complex_fourier_transform(x, y, N):
+    # input x(t), y(t)
+    # returns dictionary of complex fourier constants c_i, where -N <= i <= N
+    c = dict()
+    for i in range(-N, N+1):
+        real_func = lambda t: cos(2*pi*i*t)*x(t) + sin(2*pi*i*t)*y(t)
+        imag_func = lambda t: -sin(2*pi*i*t)*x(t) + cos(2*pi*i*t)*y(t)
+        c[i] = integrate(real_func) + integrate(imag_func) * 1j
+    return c
 
 def convert_to_tkimage():
     global src
@@ -33,18 +51,32 @@ def convert_to_tkimage():
     # color img -> gray sclae -> outline
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     outline = cv2.Canny(gray, 100, 255)
-    # cv2.imshow("canny", outline)
 
+    # points -> connect list
     connectList = connect_points(outline)
     draw_by_list(canvas_outline, connectList)
 
-    print(img_function(0.3))
-
+    # transform img form
     img = Image.fromarray(outline)
     imgtk = ImageTk.PhotoImage(image=img)
 
     label.config(image=imgtk)
     label.image = imgtk
+
+    # fourier transformation
+    x = lambda t: img_function(t).x
+    y = lambda t: img_function(t).y
+
+    constants = complex_fourier_transform(x, y, 10)
+
+    window.update()
+
+    for k in range(1000):
+        t = k / 1000
+        position = sum(constants[i] * (cos(2*pi*i*t)+sin(2*pi*i*t)*1j) for i in range(-10, 11))
+        canvas_fourier.create_oval(position.real, position.imag, position.real+1, position.imag+1, fill="blue")
+        window.update()
+
 
 
 def connect_points(outline):
