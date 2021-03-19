@@ -42,6 +42,7 @@ def connect_points(outline):
     
     connectList = [0]
     # print(len(pointList))
+    cnt = 0
     while len(connectList) != len(pointList):
         dis = 800
         point = pointList[connectList[-1]]
@@ -52,7 +53,8 @@ def connect_points(outline):
         connectList.append(near)
         
         per = len(connectList)/len(pointList)
-        print(per)
+        cnt += 1
+        if cnt%10 == 0: print(per)
 
     for i in range(len(connectList)):
         connectList[i] = pointList[connectList[i]]
