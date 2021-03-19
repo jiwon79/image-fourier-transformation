@@ -1,6 +1,7 @@
 from math import cos, sin, pi
 from tkinter import *
 import time
+from img_to_function import *
 
 def integrate(g):
     # integrate g(t) from 0 to 1
@@ -19,10 +20,12 @@ def complex_fourier_transform(x, y, N):
         c[i] = integrate(real_func) + integrate(imag_func) * 1j
     return c
 
+# x = lambda t: img_function(t).x
+# y = lambda t: img_function(t).y
 x = lambda t: 50*cos(2*pi*t)+200 + 30*t
 y = lambda t: 100*sin(2*pi*t)+200
 
-constants = complex_fourier_transform(x, y, 10)
+constants = complex_fourier_transform(x, y, 1)
 
 window = Tk()
 window.title("image fourier transformation")
