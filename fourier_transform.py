@@ -25,7 +25,7 @@ def complex_fourier_transform(x, y, N):
 x = lambda t: 50*cos(2*pi*t)+200 + 30*t
 y = lambda t: 100*sin(2*pi*t)+200
 
-constants = complex_fourier_transform(x, y, 1)
+constants = complex_fourier_transform(x, y, 10)
 
 window = Tk()
 window.title("image fourier transformation")
