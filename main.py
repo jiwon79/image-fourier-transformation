@@ -91,7 +91,8 @@ def convert_to_tkimage():
         tmp = convert(centers[-i].real, centers[-i].imag, abs(c[-i]))
         circles[-i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="")
         arrows[-i] = canvas_fourier.create_line(centers[i].real, centers[i].imag, centers[-i].real, centers[-i].imag)
-
+    
+    canvas_fourier.delete(arrows[1])
     position = centers[-N] + c[-N]
     arrows[N+1] = canvas_fourier.create_line(centers[-N].real, centers[-N].imag, position.real, position.imag)
 
