@@ -27,6 +27,8 @@ def img_function(t): # 0<= t <= 1
     para = t*len(connectList)-idx
     return segment_function(connectList[idx], connectList[idx+1], para)
 
+
+# fourier functions
 def integrate(g):
     # integrate g(t) from 0 to 1
     h = 0.0001
@@ -44,6 +46,8 @@ def complex_fourier_transform(x, y, N):
         c[i] = integrate(real_func) + integrate(imag_func) * 1j
     return c
 
+
+# action when click button
 def convert_to_tkimage():
     global src
     global connectList
@@ -77,32 +81,38 @@ def convert_to_tkimage():
         canvas_fourier.create_oval(position.real, position.imag, position.real+1, position.imag+1, fill="blue")
         window.update()
 
+def nearest_point(outline, p):
+    n = 1
+    while True:
+        for i in range(n):
+            direction = [(n-i, i), (-i, n-i), (-n+i, -i), (i, -n+i)]
+            for dir in direction:
+                x, y = p.x + dir[0], p.y + dir[1]
+                if 0 <= x < 400 and 0 <= y < 400:
+                    if outline[y][x] == 255:
+                        outline[y][x] = 254
+                        return Point(x, y)
+        n += 1
 
+    
 
 def connect_points(outline):
     # detect black point
     pointList = []
     for i in range(img_width):
         for j in range(img_height):
-            if outline[i][j] == 255:
-                pointList.append(Point(j, i))
+            if outline[j][i] == 255: # 0 : white, 255 : black
+                pointList.append(Point(i, j))
     
     # connect near point
-    connectList = [0]
+    connectList = [pointList[0]]
     while len(connectList) != len(pointList):
-        dis = 800
-        point = pointList[connectList[-1]]
-        for i in range(len(pointList)):
-            if not i in connectList and dis > point.getDistance(pointList[i]):
-                dis = point.getDistance(pointList[i])
-                near = i
+        point = connectList[-1]
+        near = nearest_point(outline, point)
         connectList.append(near)
         
-        print(len(connectList)/len(pointList))
-    connectList.append(0)
-
-    for i in range(len(connectList)):
-        connectList[i] = pointList[connectList[i]]
+        print(len(connectList))
+    connectList.append(connectList[0])
    
     return connectList
 
@@ -116,7 +126,7 @@ def draw_by_list(canvas, l):
 
 # bilateral filter
 ############################## load img ###############################
-src = cv2.imread("./img/music.jpg")
+src = cv2.imread("./img/lion.jpg")
 img_width, img_height = 400, 400
 src = cv2.resize(src, (img_width,  img_height))
 
