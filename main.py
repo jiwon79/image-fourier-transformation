@@ -71,15 +71,52 @@ def convert_to_tkimage():
     x = lambda t: img_function(t).x
     y = lambda t: img_function(t).y
 
-    constants = complex_fourier_transform(x, y, 10)
+    N = 10
+    c = complex_fourier_transform(x, y, N)
 
     window.update()
 
-    for k in range(1000):
-        t = k / 1000
-        position = sum(constants[i] * (cos(2*pi*i*t)+sin(2*pi*i*t)*1j) for i in range(-10, 11))
+    centers = dict()
+    circles = dict()
+    arrows = dict()
+    centers[0] = 0
+
+    for i in range(1, N+1):
+        centers[i] = centers[1-i] + c[1-i]
+        tmp = convert(centers[i].real, centers[i].imag, abs(c[i]))
+        circles[i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="")
+        arrows[i] = canvas_fourier.create_line(centers[1-i].real, centers[1-i].imag, centers[i].real, centers[i].imag)
+        
+        centers[-i] = centers[i] + c[i]
+        tmp = convert(centers[-i].real, centers[-i].imag, abs(c[-i]))
+        circles[-i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="")
+        arrows[-i] = canvas_fourier.create_line(centers[i].real, centers[i].imag, centers[-i].real, centers[-i].imag)
+
+    position = centers[-N] + c[-N]
+    arrows[N+1] = canvas_fourier.create_line(centers[-N].real, centers[-N].imag, position.real, position.imag)
+
+    M = 300
+
+    for k in range(M):
+        t = k / M
+        for i in range(1, N+1):
+            centers[i] = centers[1-i] + c[1-i] * (cos(2*pi*(1-i)*t) + 1j * sin(2*pi*(1-i)*t))
+            tmp = convert(centers[i].real, centers[i].imag, abs(c[i]))
+            canvas_fourier.coords(circles[i], tmp[0], tmp[1], tmp[2], tmp[3])
+            canvas_fourier.coords(arrows[i], centers[1-i].real, centers[1-i].imag, centers[i].real, centers[i].imag)
+            
+            centers[-i] = centers[i] + c[i] * (cos(2*pi*i*t) + 1j * sin(2*pi*i*t))
+            tmp = convert(centers[-i].real, centers[-i].imag, abs(c[-i]))
+            canvas_fourier.coords(circles[-i], tmp[0], tmp[1], tmp[2], tmp[3])
+            canvas_fourier.coords(arrows[-i], centers[i].real, centers[i].imag, centers[-i].real, centers[-i].imag)
+        
+        position = centers[-N] + c[-N] * (cos(2*pi*(-N)*t) + 1j * sin(2*pi*(-N)*t))
+        canvas_fourier.coords(arrows[N+1], centers[-N].real, centers[-N].imag, position.real, position.imag)
         canvas_fourier.create_oval(position.real, position.imag, position.real+1, position.imag+1, fill="blue")
         window.update()
+
+def convert(centerx, centery, radius):
+    return centerx-radius, centery-radius, centerx+radius, centery+radius
 
 def nearest_point(outline, p):
     n = 1
@@ -119,14 +156,14 @@ def connect_points(outline):
 
 # GUI function
 l = [Point(10,10), Point(100,50), Point(40,100), Point(80,90)]
-def draw_by_list(canvas, l):
+def draw_by_list(canvas_fourier, l):
     for i in range(len(l)-1):
-        canvas.create_line(l[i].x, l[i].y, l[i+1].x, l[i+1].y, fill="#476042", width=1)
+        canvas_fourier.create_line(l[i].x, l[i].y, l[i+1].x, l[i+1].y, fill="#476042", width=1)
 
 
 # bilateral filter
 ############################## load img ###############################
-src = cv2.imread("./img/lion.jpg")
+src = cv2.imread("./img/music.jpg")
 img_width, img_height = 400, 400
 src = cv2.resize(src, (img_width,  img_height))
 
