@@ -4,6 +4,7 @@ from PIL import Image
 from PIL import ImageTk
 from math import cos, sin, pi
 
+from near_algorithm import *
 from classes import *
 # from fourier_transform import *
 
@@ -84,13 +85,13 @@ def convert_to_tkimage():
     for i in range(1, N+1):
         centers[i] = centers[1-i] + c[1-i]
         tmp = convert(centers[i].real, centers[i].imag, abs(c[i]))
-        circles[i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="")
-        arrows[i] = canvas_fourier.create_line(centers[1-i].real, centers[1-i].imag, centers[i].real, centers[i].imag)
+        circles[i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="", outline="#c4c4c4")
+        arrows[i] = canvas_fourier.create_line(centers[1-i].real, centers[1-i].imag, centers[i].real, centers[i].imag, width=2)
         
         centers[-i] = centers[i] + c[i]
         tmp = convert(centers[-i].real, centers[-i].imag, abs(c[-i]))
-        circles[-i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="")
-        arrows[-i] = canvas_fourier.create_line(centers[i].real, centers[i].imag, centers[-i].real, centers[-i].imag)
+        circles[-i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="", outline="#c4c4c4")
+        arrows[-i] = canvas_fourier.create_line(centers[i].real, centers[i].imag, centers[-i].real, centers[-i].imag, width=2)
 
     position = centers[-N] + c[-N]
     arrows[N+1] = canvas_fourier.create_line(centers[-N].real, centers[-N].imag, position.real, position.imag)
@@ -117,20 +118,6 @@ def convert_to_tkimage():
 
 def convert(centerx, centery, radius):
     return centerx-radius, centery-radius, centerx+radius, centery+radius
-
-def nearest_point(outline, p):
-    n = 1
-    while True:
-        for i in range(n):
-            direction = [(n-i, i), (-i, n-i), (-n+i, -i), (i, -n+i)]
-            for dir in direction:
-                x, y = p.x + dir[0], p.y + dir[1]
-                if 0 <= x < 400 and 0 <= y < 400:
-                    if outline[y][x] == 255:
-                        outline[y][x] = 254
-                        return Point(x, y)
-        n += 1
-
     
 
 def connect_points(outline):
@@ -148,7 +135,7 @@ def connect_points(outline):
         near = nearest_point(outline, point)
         connectList.append(near)
         
-        print(len(connectList))
+        print(len(connectList)/len(pointList))
     connectList.append(connectList[0])
    
     return connectList
@@ -163,7 +150,7 @@ def draw_by_list(canvas_fourier, l):
 
 # bilateral filter
 ############################## load img ###############################
-src = cv2.imread("./img/music.jpg")
+src = cv2.imread("./img/lion.jpg")
 img_width, img_height = 400, 400
 src = cv2.resize(src, (img_width,  img_height))
 
