@@ -51,7 +51,7 @@ def complex_fourier_transform(x, y, N):
 
 
 # action when click button
-def convert_to_tkimage():
+def outline_action():
     global src
     global connectList
     
@@ -70,6 +70,7 @@ def convert_to_tkimage():
     label.config(image=imgtk)
     label.image = imgtk
 
+def fourier_action():
     # fourier transformation
     x = lambda t: img_function(t).x
     y = lambda t: img_function(t).y
@@ -87,14 +88,15 @@ def convert_to_tkimage():
     for i in range(1, N+1):
         centers[i] = centers[1-i] + c[1-i]
         tmp = convert(centers[i].real, centers[i].imag, abs(c[i]))
-        circles[i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="", outline="#c4c4c4")
+        circles[i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="", outline = "#ff948c")
         arrows[i] = canvas_fourier.create_line(centers[1-i].real, centers[1-i].imag, centers[i].real, centers[i].imag, width=2)
         
         centers[-i] = centers[i] + c[i]
         tmp = convert(centers[-i].real, centers[-i].imag, abs(c[-i]))
-        circles[-i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="", outline="#c4c4c4")
+        circles[-i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="", outline = "#ff948c")
         arrows[-i] = canvas_fourier.create_line(centers[i].real, centers[i].imag, centers[-i].real, centers[-i].imag, width=2)
 
+    canvas_fourier.delete(arrows[1])
     position = centers[-N] + c[-N]
     arrows[N+1] = canvas_fourier.create_line(centers[-N].real, centers[-N].imag, position.real, position.imag)
 
@@ -195,14 +197,11 @@ canvas_fourier.place(x=0, y=0)
 canvas_outline = Canvas(window, width=img_width, height=img_height, bg="white", bd=2)
 canvas_outline.place(x=400, y=0)
 
+button_outline = Button(window, text="outline detection", command=outline_action)
+button_outline.place(x=1200,y=0, width=200, height=100)
 
-# label = Label(window, image=imgtk)
-# label.place(x=800, y=0)
-# label.pack
-
-button_outline = Button(window, text="outline detection", command=convert_to_tkimage)
-button_outline.place(x=1200,y=0, width=200, height=200)
-# button.pack(expand=True, fill='both')
+button_outline = Button(window, text="fourier transform", command=fourier_action)
+button_outline.place(x=1200,y=100, width=200, height=100)
 
 button_load = Button(window, text="load img", command=load)
 button_load.place(x=1200, y=200, width=200, height=200)
