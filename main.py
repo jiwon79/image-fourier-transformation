@@ -1,5 +1,7 @@
 import cv2
 from tkinter import *
+from tkinter import filedialog
+
 from PIL import Image
 from PIL import ImageTk
 from math import cos, sin, pi
@@ -147,9 +149,29 @@ def draw_by_list(canvas_fourier, l):
     for i in range(len(l)-1):
         canvas_fourier.create_line(l[i].x, l[i].y, l[i+1].x, l[i+1].y, fill="#476042", width=1)
 
+def load():
+    global src, img, imgtk
+    window.filename =  filedialog.askopenfilename(initialdir = "./", title = "Select file")
+
+    src = cv2.imread(window.filename)
+    src = cv2.resize(src, (img_width,  img_height))
+
+    # transform opencv(BGR) to tkinter(RGB)
+    img = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
+
+    # transform numpy array to img
+    img = Image.fromarray(img)
+    imgtk = ImageTk.PhotoImage(image=img)
+
+    label.configure(image=imgtk)
+    label.image = imgtk
+
 
 # bilateral filter
 ############################## load img ###############################
+img_width, img_height = 400, 400
+
+
 src = cv2.imread("./img/lion.jpg")
 img_width, img_height = 400, 400
 src = cv2.resize(src, (img_width,  img_height))
@@ -161,6 +183,10 @@ img = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
 img = Image.fromarray(img)
 imgtk = ImageTk.PhotoImage(image=img)
 
+label = Label(window, image=imgtk)
+label.place(x=800, y=0)
+label.pack
+
 
 ################################ GUI ###################################
 canvas_fourier = Canvas(window, width=img_width, height=img_height, bg="white", bd=2)
@@ -170,12 +196,14 @@ canvas_outline = Canvas(window, width=img_width, height=img_height, bg="white", 
 canvas_outline.place(x=400, y=0)
 
 
-label = Label(window, image=imgtk)
-label.place(x=800, y=0)
-label.pack
+# label = Label(window, image=imgtk)
+# label.place(x=800, y=0)
+# label.pack
 
-button = Button(window, text="outline detection", command=convert_to_tkimage)
-button.place(x=1200,y=0, width=200, height=400)
+button_outline = Button(window, text="outline detection", command=convert_to_tkimage)
+button_outline.place(x=1200,y=0, width=200, height=200)
 # button.pack(expand=True, fill='both')
 
+button_load = Button(window, text="load img", command=load)
+button_load.place(x=1200, y=200, width=200, height=200)
 window.mainloop()
