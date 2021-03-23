@@ -71,7 +71,7 @@ def convert_to_tkimage():
     x = lambda t: img_function(t).x
     y = lambda t: img_function(t).y
 
-    N = 10
+    N = 5
     c = complex_fourier_transform(x, y, N)
 
     window.update()
@@ -84,14 +84,15 @@ def convert_to_tkimage():
     for i in range(1, N+1):
         centers[i] = centers[1-i] + c[1-i]
         tmp = convert(centers[i].real, centers[i].imag, abs(c[i]))
-        circles[i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="")
-        arrows[i] = canvas_fourier.create_line(centers[1-i].real, centers[1-i].imag, centers[i].real, centers[i].imag)
+        circles[i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="", outline = "#ff948c")
+        arrows[i] = canvas_fourier.create_line(centers[1-i].real, centers[1-i].imag, centers[i].real, centers[i].imag, width=2)
         
         centers[-i] = centers[i] + c[i]
         tmp = convert(centers[-i].real, centers[-i].imag, abs(c[-i]))
-        circles[-i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="")
-        arrows[-i] = canvas_fourier.create_line(centers[i].real, centers[i].imag, centers[-i].real, centers[-i].imag)
+        circles[-i] = canvas_fourier.create_oval(tmp[0], tmp[1], tmp[2], tmp[3], fill="", outline = "#ff948c")
+        arrows[-i] = canvas_fourier.create_line(centers[i].real, centers[i].imag, centers[-i].real, centers[-i].imag, width=2)
 
+    canvas_fourier.delete(arrows[1])
     position = centers[-N] + c[-N]
     arrows[N+1] = canvas_fourier.create_line(centers[-N].real, centers[-N].imag, position.real, position.imag)
 
