@@ -34,7 +34,7 @@ def img_function(t): # 0<= t <= 1
 # fourier functions
 def integrate(g):
     # integrate g(t) from 0 to 1
-    h = 0.0001
+    h = 0.001
     N = int(1/h)
     return h*sum(g(h*(i+0.5)) for i in range(N))
 
@@ -70,12 +70,14 @@ def outline_action():
     label.config(image=imgtk)
     label.image = imgtk
 
+    print("Outline Detection Finished")
+
 def fourier_action():
     # fourier transformation
     x = lambda t: img_function(t).x
     y = lambda t: img_function(t).y
 
-    N = 10
+    N = slider_N.get()
     c = complex_fourier_transform(x, y, N)
 
     window.update()
@@ -84,6 +86,8 @@ def fourier_action():
     circles = dict()
     arrows = dict()
     centers[0] = 0
+
+    canvas_fourier.delete('all')
 
     for i in range(1, N+1):
         centers[i] = centers[1-i] + c[1-i]
@@ -100,7 +104,7 @@ def fourier_action():
     position = centers[-N] + c[-N]
     arrows[N+1] = canvas_fourier.create_line(centers[-N].real, centers[-N].imag, position.real, position.imag)
 
-    M = 300
+    M = slider_M.get()
 
     for k in range(M):
         t = k / M
@@ -119,6 +123,8 @@ def fourier_action():
         canvas_fourier.coords(arrows[N+1], centers[-N].real, centers[-N].imag, position.real, position.imag)
         canvas_fourier.create_oval(position.real, position.imag, position.real+1, position.imag+1, fill="blue")
         window.update()
+    
+    print("Fourier Transform Finished")
 
 def convert(centerx, centery, radius):
     return centerx-radius, centery-radius, centerx+radius, centery+radius
@@ -139,7 +145,7 @@ def connect_points(outline):
         near = nearest_point(outline, point)
         connectList.append(near)
         
-        print(len(connectList)/len(pointList))
+        #print(len(connectList)/len(pointList))
     connectList.append(connectList[0])
    
     return connectList
@@ -174,7 +180,7 @@ def load():
 img_width, img_height = 400, 400
 
 
-src = cv2.imread("./img/lion.jpg")
+src = cv2.imread("./img/music.jpg")
 img_width, img_height = 400, 400
 src = cv2.resize(src, (img_width,  img_height))
 
@@ -204,5 +210,14 @@ button_outline = Button(window, text="fourier transform", command=fourier_action
 button_outline.place(x=1200,y=100, width=200, height=100)
 
 button_load = Button(window, text="load img", command=load)
-button_load.place(x=1200, y=200, width=200, height=200)
+button_load.place(x=1200, y=200, width=200, height=100)
+
+slider_N = Scale(window, from_=0, to=40, orient=HORIZONTAL, sliderlength=15, length=150)
+slider_N.place(x=1225,y=300)
+slider_N.set(10)
+
+slider_M = Scale(window, from_=0, to=1000, orient=HORIZONTAL, sliderlength=15, length=150)
+slider_M.place(x=1225,y=350)
+slider_M.set(300)
+
 window.mainloop()

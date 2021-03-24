@@ -71,7 +71,7 @@ def convert_to_tkimage():
     x = lambda t: img_function(t).x
     y = lambda t: img_function(t).y
 
-    N = 5
+    N = 2
     c = complex_fourier_transform(x, y, N)
 
     window.update()
