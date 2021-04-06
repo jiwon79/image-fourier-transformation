@@ -5,6 +5,7 @@ from tkinter import filedialog
 from PIL import Image
 from PIL import ImageTk
 from math import cos, sin, pi
+import random
 
 from near_algorithm import *
 from classes import *
@@ -60,9 +61,9 @@ def outline_action():
     outline = cv2.Canny(gray, 100, 255)
 
     # points -> connect list
-    connectList = connect_points(outline)
-    draw_by_list(canvas_outline, connectList)
-
+    connectList, cluster = connect_points(outline)
+    # draw_by_list(canvas_outline, connectList, (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255)))
+    draw_by_cluster(canvas_outline, cluster)
     # transform img form
     img = Image.fromarray(outline)
     imgtk = ImageTk.PhotoImage(image=img)
@@ -140,22 +141,36 @@ def connect_points(outline):
     
     # connect near point
     connectList = [pointList[0]]
+    cluster = [[]]
     while len(connectList) != len(pointList):
         point = connectList[-1]
-        near = nearest_point(outline, point)
+        near, cluster = nearest_point_cluster(outline, point, cluster)
         connectList.append(near)
         
         #print(len(connectList)/len(pointList))
+    print(cluster)
     connectList.append(connectList[0])
    
-    return connectList
+    return connectList, cluster
 
 
 # GUI function
 l = [Point(10,10), Point(100,50), Point(40,100), Point(80,90)]
-def draw_by_list(canvas_fourier, l):
+def draw_by_list(canvas, l, color):
+    color = "#%02x%02x%02x" % (color[0], color[1], color[2])
     for i in range(len(l)-1):
-        canvas_fourier.create_line(l[i].x, l[i].y, l[i+1].x, l[i+1].y, fill="#476042", width=1)
+        canvas.create_line(l[i].x, l[i].y, l[i+1].x, l[i+1].y, fill=color, width=1)
+
+
+def draw_by_cluster(canvas, cluster):
+    canvas.delete("all")
+    color = (0, 255, 255)
+    print(len(cluster))
+    for l in cluster:
+        print(len(l))
+        color = (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255))
+        draw_by_list(canvas, l, color)
+
 
 def load():
     global src, img, imgtk
@@ -180,7 +195,7 @@ def load():
 img_width, img_height = 400, 400
 
 
-src = cv2.imread("./img/music.jpg")
+src = cv2.imread("./img/lion.jpg")
 img_width, img_height = 400, 400
 src = cv2.resize(src, (img_width,  img_height))
 
@@ -212,11 +227,11 @@ button_outline.place(x=1200,y=100, width=200, height=100)
 button_load = Button(window, text="load img", command=load)
 button_load.place(x=1200, y=200, width=200, height=100)
 
-slider_N = Scale(window, from_=0, to=40, orient=HORIZONTAL, sliderlength=15, length=150)
+slider_N = Scale(window, from_=0, to=80, orient=HORIZONTAL, sliderlength=15, length=150)
 slider_N.place(x=1225,y=300)
 slider_N.set(10)
 
-slider_M = Scale(window, from_=0, to=1000, orient=HORIZONTAL, sliderlength=15, length=150)
+slider_M = Scale(window, from_=0, to=1500, orient=HORIZONTAL, sliderlength=15, length=150)
 slider_M.place(x=1225,y=350)
 slider_M.set(300)
 
