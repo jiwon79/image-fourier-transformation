@@ -1,7 +1,6 @@
 import cv2
 from tkinter import *
 from tkinter import filedialog
-
 from PIL import Image
 from PIL import ImageTk
 from math import cos, sin, pi
@@ -9,7 +8,6 @@ import random
 
 from near_algorithm import *
 from classes import *
-# from fourier_transform import *
 
 ############################ tkinter window ############################
 window = Tk()
@@ -23,35 +21,13 @@ connectList = []
 def segment_function(p1, p2, t): # 0 <= t <= 1
     return p1 + (p2-p1)*t
 
-
-def img_function(t): # 0<= t <= 1
+def img_to_func(t): # 0 <= t <= 1
     global connectList
     
     idx = int(t*len(connectList)-1)
     para = t*len(connectList)-idx
     return segment_function(connectList[idx], connectList[idx+1], para)
 
-
-# fourier functions
-def integrate(g):
-    # integrate g(t) from 0 to 1
-    h = 0.001
-    N = int(1/h)
-    return h*sum(g(h*(i+0.5)) for i in range(N))
-
-
-def complex_fourier_transform(x, y, N):
-    # input x(t), y(t)
-    # returns dictionary of complex fourier constants c_i, where -N <= i <= N
-    c = dict()
-    for i in range(-N, N+1):
-        real_func = lambda t: cos(2*pi*i*t)*x(t) + sin(2*pi*i*t)*y(t)
-        imag_func = lambda t: -sin(2*pi*i*t)*x(t) + cos(2*pi*i*t)*y(t)
-        c[i] = integrate(real_func) + integrate(imag_func) * 1j
-    return c
-
-
-# action when click button
 def outline_action():
     global src
     global connectList
@@ -62,21 +38,56 @@ def outline_action():
 
     # points -> connect list
     connectList, cluster = connect_points(outline)
-    # draw_by_list(canvas_outline, connectList, (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255)))
     draw_by_cluster(canvas_outline, cluster)
+    
     # transform img form
     img = Image.fromarray(outline)
     imgtk = ImageTk.PhotoImage(image=img)
-
     label.config(image=imgtk)
     label.image = imgtk
-
     print("Outline Detection Finished")
+
+def connect_points(outline):
+    # detect black point
+    pointList = []
+    for i in range(img_width):
+        for j in range(img_height):
+            if outline[j][i] == 255: # 0 : white, 255 : black
+                pointList.append(Point(i, j))
+    
+    # connect near point
+    connectList = [pointList[0]]
+    cluster = [[]]
+    while len(connectList) != len(pointList):
+        point = connectList[-1]
+        near, cluster = nearest_point_cluster(outline, point, cluster)
+        connectList.append(near)
+    connectList.append(connectList[0])
+   
+    return connectList, cluster
+
+########################### fourier functions ##########################
+
+def integrate(g):
+    # integrate g(t) from 0 to 1
+    h = 0.001
+    N = int(1/h)
+    return h*sum(g(h*(i+0.5)) for i in range(N))
+
+def complex_fourier_transform(x, y, N):
+    # input x(t), y(t)
+    # returns dictionary of complex fourier constants c_i, where -N <= i <= N
+    c = dict()
+    for i in range(-N, N+1):
+        real_func = lambda t: cos(2*pi*i*t) * x(t) + sin(2*pi*i*t) * y(t)
+        imag_func = lambda t: -sin(2*pi*i*t) * x(t) + cos(2*pi*i*t) * y(t)
+        c[i] = integrate(real_func) + integrate(imag_func) * 1j
+    return c
 
 def fourier_action():
     # fourier transformation
-    x = lambda t: img_function(t).x
-    y = lambda t: img_function(t).y
+    x = lambda t: img_to_func(t).x
+    y = lambda t: img_to_func(t).y
 
     N = slider_N.get()
     c = complex_fourier_transform(x, y, N)
@@ -124,43 +135,18 @@ def fourier_action():
         canvas_fourier.coords(arrows[N+1], centers[-N].real, centers[-N].imag, position.real, position.imag)
         canvas_fourier.create_oval(position.real, position.imag, position.real+1, position.imag+1, fill="blue")
         window.update()
-    
     print("Fourier Transform Finished")
 
 def convert(centerx, centery, radius):
     return centerx-radius, centery-radius, centerx+radius, centery+radius
     
 
-def connect_points(outline):
-    # detect black point
-    pointList = []
-    for i in range(img_width):
-        for j in range(img_height):
-            if outline[j][i] == 255: # 0 : white, 255 : black
-                pointList.append(Point(i, j))
-    
-    # connect near point
-    connectList = [pointList[0]]
-    cluster = [[]]
-    while len(connectList) != len(pointList):
-        point = connectList[-1]
-        near, cluster = nearest_point_cluster(outline, point, cluster)
-        connectList.append(near)
-        
-        #print(len(connectList)/len(pointList))
-    print(cluster)
-    connectList.append(connectList[0])
-   
-    return connectList, cluster
 
-
-# GUI function
-l = [Point(10,10), Point(100,50), Point(40,100), Point(80,90)]
+############################## GUI functions #############################
 def draw_by_list(canvas, l, color):
     color = "#%02x%02x%02x" % (color[0], color[1], color[2])
     for i in range(len(l)-1):
         canvas.create_line(l[i].x, l[i].y, l[i+1].x, l[i+1].y, fill=color, width=1)
-
 
 def draw_by_cluster(canvas, cluster):
     canvas.delete("all")
@@ -170,7 +156,6 @@ def draw_by_cluster(canvas, cluster):
         print(len(l))
         color = (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255))
         draw_by_list(canvas, l, color)
-
 
 def load():
     global src, img, imgtk
@@ -185,15 +170,12 @@ def load():
     # transform numpy array to img
     img = Image.fromarray(img)
     imgtk = ImageTk.PhotoImage(image=img)
-
     label.configure(image=imgtk)
     label.image = imgtk
 
 
-# bilateral filter
 ############################## load img ###############################
 img_width, img_height = 400, 400
-
 
 src = cv2.imread("./img/lion.jpg")
 img_width, img_height = 400, 400
@@ -227,7 +209,7 @@ button_outline.place(x=1200,y=100, width=200, height=100)
 button_load = Button(window, text="load img", command=load)
 button_load.place(x=1200, y=200, width=200, height=100)
 
-slider_N = Scale(window, from_=0, to=80, orient=HORIZONTAL, sliderlength=15, length=150)
+slider_N = Scale(window, from_=0, to=200, orient=HORIZONTAL, sliderlength=15, length=150)
 slider_N.place(x=1225,y=300)
 slider_N.set(10)
 

@@ -70,25 +70,7 @@ def nearest_point_cluster(outline, p, cluster):
                 x, y = p.x + dir[0], p.y + dir[1]
                 if 0 <= x < 400 and 0 <= y < 400:
                     if outline[y][x] == 255:
-                        adj.append(Point(x, y))
-
-        if (len(adj) != 0):
-            max = -1
-            for point in adj:
-                direction = [(0,1), (1,0), (0,-1), (-1,0)]
-                count = 0
-                for dir in direction:
-                    x, y = point.x+dir[1], point.y+dir[0]
-                    if 0 <= x < 400 and 0 <= y < 400:
-                        if outline[y][x] == 254:
-                            count += 1
-                if max < count:
-                    max = count
-                    near = point
-            outline[near.y][near.x] = 254
-            return near
-        n += 1
-        
+                        adj.append(Point(x, y))        
         
         if (len(adj) != 0):
             outline[adj[0].y][adj[0].x] = 254
