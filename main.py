@@ -21,7 +21,7 @@ connectList = []
 def segment_function(p1, p2, t): # 0 <= t <= 1
     return p1 + (p2-p1)*t
 
-def img_to_func(t): # 0 <= t <= 1
+def connectlist_to_func(t): # 0 <= t <= 1
     global connectList
     
     idx = int(t*len(connectList)-1)
@@ -86,8 +86,9 @@ def complex_fourier_transform(x, y, N):
 
 def fourier_action():
     # fourier transformation
-    x = lambda t: img_to_func(t).x
-    y = lambda t: img_to_func(t).y
+    connectList.append(connectList[0])
+    x = lambda t: connectlist_to_func(t).x
+    y = lambda t: connectlist_to_func(t).y
 
     N = slider_N.get()
     c = complex_fourier_transform(x, y, N)
@@ -193,21 +194,48 @@ label.place(x=800, y=0)
 label.pack
 
 
+############################# Draw Line ################################
+
+pastx, pasty = 0, 0
+startbool = False
+
+def drawing(event):
+    global pastx, pasty, startbool
+    if startbool:
+        canvas_outline.create_line(pastx, pasty, event.x, event.y)
+    pastx, pasty = event.x, event.y
+    connectList.append(Point(event.x,event.y))
+    startbool = True
+
+
+############################## Clearing ################################
+
+def clear():
+    global startbool, connectList
+    canvas_outline.delete('all')
+    connectList = []
+    startbool = False
+
+
 ################################ GUI ###################################
 canvas_fourier = Canvas(window, width=img_width, height=img_height, bg="white", bd=2)
 canvas_fourier.place(x=0, y=0)
 
 canvas_outline = Canvas(window, width=img_width, height=img_height, bg="white", bd=2)
 canvas_outline.place(x=400, y=0)
+canvas_outline.bind("<B1-Motion>", drawing)
 
 button_outline = Button(window, text="outline detection", command=outline_action)
-button_outline.place(x=1200,y=0, width=200, height=100)
+button_outline.place(x=1200,y=0, width=200, height=75)
 
-button_outline = Button(window, text="fourier transform", command=fourier_action)
-button_outline.place(x=1200,y=100, width=200, height=100)
+button_fourier = Button(window, text="fourier transform", command=fourier_action)
+button_fourier.place(x=1200,y=75, width=200, height=75)
+
+button_clear = Button(window, text="Clear Line", command=clear)
+button_clear.place(x=1200,y=150, width=200, height=75)
 
 button_load = Button(window, text="load img", command=load)
-button_load.place(x=1200, y=200, width=200, height=100)
+button_load.place(x=1200, y=225, width=200, height=75)
 
 slider_N = Scale(window, from_=0, to=200, orient=HORIZONTAL, sliderlength=15, length=150)
 slider_N.place(x=1225,y=300)
