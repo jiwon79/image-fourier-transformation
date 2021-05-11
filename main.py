@@ -137,6 +137,12 @@ def fourier_action():
         canvas_fourier.create_oval(position.real, position.imag, position.real+1, position.imag+1, fill="blue")
         window.update()
     print("Fourier Transform Finished")
+    
+    for i in range(1,N+1):
+        canvas_fourier.delete(circles[i])
+        canvas_fourier.delete(circles[-i])
+        canvas_fourier.delete(arrows[i])
+        canvas_fourier.delete(arrows[-i])
 
 def convert(centerx, centery, radius):
     return centerx-radius, centery-radius, centerx+radius, centery+radius
