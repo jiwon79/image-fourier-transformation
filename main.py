@@ -5,6 +5,9 @@ from PIL import Image
 from PIL import ImageTk
 from math import cos, sin, pi
 import random
+from time import *
+import sys
+sys.setrecursionlimit(10**7)
 
 from near_algorithm import *
 from classes import *
@@ -17,6 +20,7 @@ window.resizable(False, False)
 
 ############################### functions ##############################
 connectList = []
+pointList = []
 
 def segment_function(p1, p2, t): # 0 <= t <= 1
     return p1 + (p2-p1)*t
@@ -28,6 +32,14 @@ def connectlist_to_func(t): # 0 <= t <= 1
     para = t*len(connectList)-idx
     return segment_function(connectList[idx], connectList[idx+1], para)
 
+def totalDistance():
+    N = len(connectList)
+    d = 0
+
+    for i in range(N):
+        d += connectList[i].getDistance(connectList[(i+1)%N])
+    return d
+
 def outline_action():
     global src
     global connectList
@@ -36,10 +48,19 @@ def outline_action():
     gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
     outline = cv2.Canny(gray, 100, 255)
 
+    # color inverse
+    for i in range(len(outline)):
+        for j in range(len(outline[i])):
+            outline[i][j] = 255-outline[i][j]
+
+
+
     # points -> connect list
     connectList, cluster = connect_points(outline)
-    draw_by_cluster(canvas_outline, cluster)
-    
+    print("total distance : ", totalDistance())
+    # draw_by_cluster(canvas_outline, cluster)
+    draw_by_list(canvas_outline, connectList, (0,0,0))
+
     # transform img form
     img = Image.fromarray(outline)
     imgtk = ImageTk.PhotoImage(image=img)
@@ -49,21 +70,47 @@ def outline_action():
 
 def connect_points(outline):
     # detect black point
-    pointList = []
     for i in range(img_width):
         for j in range(img_height):
-            if outline[j][i] == 255: # 0 : white, 255 : black
+            if outline[j][i] == 0: # 0 : white, 255 : black
                 pointList.append(Point(i, j))
-    
+
     # connect near point
     connectList = [pointList[0]]
     cluster = [[]]
+    print("clustet 시작")
+    a = time()
+
     while len(connectList) != len(pointList):
         point = connectList[-1]
         near, cluster = nearest_point_cluster(outline, point, cluster)
         connectList.append(near)
+        # print(len(connectList), len(pointList))
     connectList.append(connectList[0])
-   
+    cluster[-1].append(cluster[0][0])
+    print('cluster 수 : ', len(cluster))
+    b = time()
+    print("cluster 걸리는 시간 : ", b-a)
+    
+    # edge 전체로 kruskal을 돌리는 경우
+    # pointGraph = pointToGraph(pointList)
+    # mst = kruskal(pointGraph, len(pointList))
+    # mst_path = mst_dfs(mst, pointList)
+    # print(cluster)
+    # print(mst)
+ 
+    # cluster 나눠서 kruskal을 돌리는 경우
+
+    mst_apro = cluster_kruskal(cluster)
+    # print("MST 갯수 : ", len(mst_apro), len(pointList))
+    mst_aproIdx = [(pointFind(mst_apro[i][0], pointList), pointFind(mst_apro[i][1], pointList)) for i in range(len(mst_apro))]
+    mst_path = mst_dfs(mst_aproIdx, pointList)
+    
+    connectList = [pointList[i] for i in  mst_path]
+
+    print("kruskal 걸리는 시간 : ", time() - b)
+
+
     return connectList, cluster
 
 ########################### fourier functions ##########################
@@ -159,18 +206,23 @@ def draw_by_cluster(canvas, cluster):
     canvas.delete("all")
     color = (0, 255, 255)
     print(len(cluster))
+    random.seed(100)
     for l in cluster:
         print(len(l))
         color = (random.randrange(0, 255), random.randrange(0, 255), random.randrange(0, 255))
+        # color = (0,0,0)
         draw_by_list(canvas, l, color)
+
+
+
 
 def load():
     global src, img, imgtk
+
     window.filename =  filedialog.askopenfilename(initialdir = "./", title = "Select file")
 
     src = cv2.imread(window.filename)
     src = cv2.resize(src, (img_width,  img_height))
-
     # transform opencv(BGR) to tkinter(RGB)
     img = cv2.cvtColor(src, cv2.COLOR_BGR2RGB)
 
@@ -183,9 +235,7 @@ def load():
 
 ############################## load img ###############################
 img_width, img_height = 400, 400
-
 src = cv2.imread("./img/lion.jpg")
-img_width, img_height = 400, 400
 src = cv2.resize(src, (img_width,  img_height))
 
 # transform opencv(BGR) to tkinter(RGB)
@@ -243,11 +293,11 @@ button_clear.place(x=1200,y=150, width=200, height=75)
 button_load = Button(window, text="load img", command=load)
 button_load.place(x=1200, y=225, width=200, height=75)
 
-slider_N = Scale(window, from_=0, to=200, orient=HORIZONTAL, sliderlength=15, length=150)
+slider_N = Scale(window, from_=0, to=500, orient=HORIZONTAL, sliderlength=15, length=150)
 slider_N.place(x=1225,y=300)
 slider_N.set(10)
 
-slider_M = Scale(window, from_=0, to=1500, orient=HORIZONTAL, sliderlength=15, length=150)
+slider_M = Scale(window, from_=0, to=3000, orient=HORIZONTAL, sliderlength=15, length=150)
 slider_M.place(x=1225,y=350)
 slider_M.set(300)
 
