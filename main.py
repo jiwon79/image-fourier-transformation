@@ -10,6 +10,7 @@ import sys
 sys.setrecursionlimit(10**7)
 
 from near_algorithm import *
+from mst_algorithm import *
 from classes import *
 
 ############################ tkinter window ############################
@@ -85,8 +86,9 @@ def connect_points(outline):
         point = connectList[-1]
         near, cluster = nearest_point_cluster(outline, point, cluster)
         connectList.append(near)
-        # print(len(connectList), len(pointList))
     connectList.append(connectList[0])
+    # return connectList, cluster
+
     cluster[-1].append(cluster[0][0])
     print('cluster 수 : ', len(cluster))
     b = time()
@@ -100,12 +102,12 @@ def connect_points(outline):
     # print(mst)
  
     # cluster 나눠서 kruskal을 돌리는 경우
-
     mst_apro = cluster_kruskal(cluster)
-    # print("MST 갯수 : ", len(mst_apro), len(pointList))
     mst_aproIdx = [(pointFind(mst_apro[i][0], pointList), pointFind(mst_apro[i][1], pointList)) for i in range(len(mst_apro))]
     mst_path = mst_dfs(mst_aproIdx, pointList)
     
+    # TSP 2-approximation algoirthm
+    # tsp_approx_path = TSP_approx(mst_path)
     connectList = [pointList[i] for i in  mst_path]
 
     print("kruskal 걸리는 시간 : ", time() - b)

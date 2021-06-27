@@ -12,6 +12,7 @@ def nearest_point_n2(pointList, outline, p):
     outline[near.y][near.x] = 1
     return near
 
+
 # search by bfs
 def nearest_point_bfs(outline, p):
     n = 1
@@ -29,6 +30,7 @@ def nearest_point_bfs(outline, p):
             outline[adj[0].y][adj[0].x] = 1
             return adj[0]
         n += 1
+
 
 # search by bfs & 탐색한 점 근처로 잡음
 def nearest_point(outline, p):
@@ -60,6 +62,7 @@ def nearest_point(outline, p):
             return near
         n += 1
 
+
 # search circles
 def circle(n):
     direction = []
@@ -78,6 +81,7 @@ def diamond(n):
         direction += [(n-i, i), (-i, n-i), (-n+i, -i), (i, -n+i)]
     return direction
 
+
 # search by bfs & make cluster
 def nearest_point_cluster(outline, p, cluster):
     n = 1
@@ -86,7 +90,6 @@ def nearest_point_cluster(outline, p, cluster):
     while True:
         direction = circle(n)
         # direction = diamond(n)
-        # print(n)
         for dir in direction:
             x, y = p.x + dir[0], p.y + dir[1]
             if 0 <= x < 400 and 0 <= y < 400:
@@ -115,6 +118,7 @@ def nearest_point_cluster(outline, p, cluster):
                 cluster[-1].append(near)
             return near, cluster
         n += 1
+
 
 # kruskal algorithm
 def pointToGraph(pointList):
@@ -187,13 +191,8 @@ def cluster_kruskal(cluster):
             d, pair = clusterDis3(cluster[i], cluster[j])
             clusterGraph.append((i, j, d))
             pairDict[(i, j)] = pair
-            # print("pair : ", pair)
     clusterGraph.sort(key = lambda x:x[2])
-
-    # print("cluster Graph : ", clusterGraph)
-    print(len(cluster))
     clusterMST = kruskal(clusterGraph, len(cluster))
-    print("Cluster MST : ", clusterMST)
     for e in clusterMST:
         mst_apro.append(pairDict[e])
     return mst_apro
@@ -246,58 +245,3 @@ def clusterDis3(c1, c2):
                     pair = (x,y)
     
     return min, pair
-
-
-def mst_dfs(mst, pointList):
-    graph, color, pred = {}, {}, {}
-    path = [0]
-
-    N = len(pointList)
-    for i in range(N):
-        graph[i] = []
-
-    for e in mst:
-        graph[e[0]].append(e[1])
-        graph[e[1]].append(e[0])
-
-    def DFSvisit(node):
-        color[node] = 1
-        for adj in graph[node]:
-            if color[adj] == 0:
-                path.append(adj)
-                pred[adj] = node
-                DFSvisit(adj)
-                path.append(pred[adj])
-        color[node] = 2
-
-    for node in graph.keys():
-        color[node] = 0
-        pred[node] = -1
-    for node in graph.keys():
-        if(color[node] == 0):
-            DFSvisit(node)
-    # print("pred : ", pred)
-    return path
-    return [pointList[i] for i in path]
-
-
-if __name__ == "__main__":
-    # pointList = [Point(0,0), Point(0,1), Point(0,2), Point(2,1), Point(3,1)]
-    # cluster = [[Point(0,0), Point(0,1), Point(0,2), Point(2,1)], [Point(2,1), Point(3,1), Point(0,0)]]
-    # pointGraph = pointToGraph(pointList)
-    # mst = kruskal(pointGraph, len(pointList))
-    # dfs = mst_dfs(mst, pointList)
-    # print("MST : ", mst)
-    # print("dfs path : ", dfs)
-
-    pointGraph = [(0,1,3), (0,2,11), (0,3,12), (1,2,10), (1,3,11), (2,3,1)]
-    pointGraph.sort(key = lambda x:x[2])
-    mst = kruskal(pointGraph, 4)
-    print(mst)
-    # mst_apro = cluster_kruskal(cluster, pointList)
-    # print(mst_apro)
-    # mst_aproIdx = [(pointFind(mst_apro[i][0], pointList), pointFind(mst_apro[i][1], pointList)) for i in range(len(mst_apro))]
-    # print(mst_aproIdx)
-    # mst_path = mst_dfs(mst_aproIdx, pointList)
-    # print(mst_path)
-    # connectList = [pointList[i] for i in  mst_path]
